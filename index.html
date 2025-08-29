@@ -1,59 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PrediktFi – Tokenized Predictions</title>
   <style>
-    /* Reset margin/padding and ensure border‑box sizing */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *,*::before,*::after { box-sizing: border-box; }
+    html,body { height: 100%; }
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #0e1130 0%, #0c1843 100%);
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       color: #fff;
-      line-height: 1.5;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      background: #0b0f2a;
+      overflow-x: hidden;
     }
-    header { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 4%; }
-    .logo { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.02em; }
-    main {
-      flex: 1;
-      padding: 3rem 4%;
+
+    /* Layer 1 gradient film */
+    .bg-aurora {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(1200px 800px at 70% 20%, rgba(46,120,255,0.25), transparent 60%),
+        radial-gradient(900px 600px at 20% 80%, rgba(0,235,190,0.18), transparent 60%),
+        radial-gradient(700px 700px at 50% 50%, rgba(130,80,255,0.25), transparent 55%),
+        radial-gradient(1000px 700px at 80% 70%, rgba(30,60,200,0.22), transparent 60%);
+      filter: blur(20px) saturate(120%);
+      animation: drift 22s linear infinite alternate;
+      opacity: 0.95;
+    }
+    @keyframes drift {
+      0% { transform: translate3d(0,0,0) scale(1); }
+      100% { transform: translate3d(-2%, -1%, 0) scale(1.05); }
+    }
+
+    /* Layer 2 subtle grid lines */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 48px 48px, 48px 48px;
+      mask-image: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.9), transparent 70%);
+      animation: gridFloat 12s ease-in-out infinite alternate;
+    }
+    @keyframes gridFloat {
+      0% { transform: scale(1) translateY(0); opacity: 0.5; }
+      100% { transform: scale(1.02) translateY(-1%); opacity: 0.65; }
+    }
+
+    /* Layer 3 soft orbs */
+    .orb {
+      position: fixed;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      filter: blur(18px);
+      opacity: 0.22;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      background: radial-gradient(circle at 40% 40%, rgba(72,178,255,0.9), rgba(72,178,255,0.2) 60%, transparent 70%);
+      animation: float 16s ease-in-out infinite;
+    }
+    .orb:nth-child(1){ left: -80px; top: 20vh; animation-delay: 0s; }
+    .orb:nth-child(2){ right: -100px; top: 55vh; animation-delay: 4s; background: radial-gradient(circle at 40% 40%, rgba(0,226,199,0.9), rgba(0,226,199,0.2) 60%, transparent 70%); }
+    .orb:nth-child(3){ left: 55vw; top: -120px; animation-delay: 8s; background: radial-gradient(circle at 40% 40%, rgba(150,120,255,0.9), rgba(150,120,255,0.2) 60%, transparent 70%); }
+    @keyframes float {
+      0% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(0,-18px,0) scale(1.05); }
+      100% { transform: translate3d(0,0,0) scale(1); }
+    }
+
+    header {
+      position: relative;
+      z-index: 2;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      padding: 20px clamp(20px, 6vw, 48px);
+    }
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      font-size: clamp(16px, 2.2vw, 20px);
+      opacity: 0.95;
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      min-height: calc(100svh - 120px);
+      display: grid;
+      place-items: center;
+      padding: clamp(24px, 5vw, 64px);
       text-align: center;
     }
-    h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-    h2 { font-size: 1.25rem; font-weight: 400; margin-bottom: 2rem; color: #b5b5c0; max-width: 540px; }
-    .cta-button {
-      display: inline-block;
-      padding: 0.8rem 1.6rem;
-      font-size: 1rem;
-      font-weight: 500;
-      color: #fff;
-      background: #3e7ff0;
-      border: none;
-      border-radius: 4px;
-      text-decoration: none;
-      transition: background 0.25s;
-      cursor: default;
+    .hero {
+      max-width: 780px;
+      margin-inline: auto;
     }
-    .cta-button:hover, .cta-button:focus { background: #5a95f5; }
-    footer { text-align: center; padding: 1.5rem 4%; font-size: 0.85rem; color: #777; }
-    @media (max-width: 480px) { h1 { font-size: 1.9rem; } h2 { font-size: 1rem; } }
+    h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.1;
+      margin-bottom: 14px;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.35);
+    }
+    h2 {
+      font-size: clamp(15px, 2.2vw, 18px);
+      font-weight: 400;
+      color: #c7cbe6;
+      margin: 0 auto 28px;
+      max-width: 580px;
+    }
+    .cta {
+      display: inline-block;
+      padding: 12px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: linear-gradient(180deg, #4a8fff, #2e6ef0);
+      color: white;
+      box-shadow: 0 10px 30px rgba(46,110,240,0.35), inset 0 0 10px rgba(255,255,255,0.12);
+      transform: translateZ(0);
+      transition: transform 0.15s ease, filter 0.2s ease;
+    }
+    .cta:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+    footer {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 24px;
+      color: #9aa3c2;
+      font-size: 14px;
+    }
+
+    /* slight vignette for depth */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.35) 100%);
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
-  <header><div class="logo">PrediktFi</div></header>
+  <div class="bg-aurora"></div>
+  <div class="bg-grid"></div>
+  <div class="orb"></div>
+  <div class="orb"></div>
+  <div class="orb"></div>
+  <div class="vignette"></div>
+
+  <header>
+    <div class="logo">PrediktFi</div>
+  </header>
+
   <main>
-    <h1>Tokenized Predictions on Solana</h1>
-    <h2>Turning insights into assets. Be the first to access the future of InfoFi.</h2>
-    <a href="#" class="cta-button">Coming soon</a>
+    <div class="hero">
+      <h1>Tokenized Predictions on Solana</h1>
+      <h2>Turning insights into assets. Be the first to access the future of InfoFi.</h2>
+      <a class="cta" href="#">Coming soon</a>
+    </div>
   </main>
-  <footer><p>&copy; 2025 PrediktFi &nbsp;|&nbsp; Built on Solana</p></footer>
+
+  <footer>
+    © 2025 PrediktFi  Built on Solana
+  </footer>
 </body>
 </html>
