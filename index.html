@@ -5,170 +5,115 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PrediktFi – Tokenized Predictions</title>
   <style>
-    *,*::before,*::after { box-sizing: border-box; }
-    html,body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: #fff;
-      background: #0b0f2a;
-      overflow-x: hidden;
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+      color:#e9ecff;
+      background:#0a0d1f;
+      overflow-x:hidden;
     }
 
-    /* Layer 1 gradient film */
-    .bg-aurora {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
+    /* Subtil bakgrunn med aurora og vignette */
+    .bg{
+      position:fixed; inset:0; pointer-events:none; z-index:0;
       background:
-        radial-gradient(1200px 800px at 70% 20%, rgba(46,120,255,0.25), transparent 60%),
-        radial-gradient(900px 600px at 20% 80%, rgba(0,235,190,0.18), transparent 60%),
-        radial-gradient(700px 700px at 50% 50%, rgba(130,80,255,0.25), transparent 55%),
-        radial-gradient(1000px 700px at 80% 70%, rgba(30,60,200,0.22), transparent 60%);
-      filter: blur(20px) saturate(120%);
-      animation: drift 22s linear infinite alternate;
-      opacity: 0.95;
+        radial-gradient(900px 600px at 20% 20%, rgba(88,142,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 80% 70%, rgba(0,220,190,.16), transparent 60%),
+        radial-gradient(600px 600px at 60% 30%, rgba(150,110,255,.16), transparent 60%),
+        linear-gradient(180deg, #0a0d1f 0%, #0c1233 100%);
+      filter:saturate(115%) blur(0.2px);
+      animation:drift 22s ease-in-out infinite alternate;
     }
-    @keyframes drift {
-      0% { transform: translate3d(0,0,0) scale(1); }
-      100% { transform: translate3d(-2%, -1%, 0) scale(1.05); }
-    }
+    @keyframes drift{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-1%, -1%, 0)}}
+    .vignette{position:fixed; inset:0; pointer-events:none; z-index:0; background:radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.35) 100%)}
 
-    /* Layer 2 subtle grid lines */
-    .bg-grid {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px);
-      background-size: 48px 48px, 48px 48px;
-      mask-image: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.9), transparent 70%);
-      animation: gridFloat 12s ease-in-out infinite alternate;
-    }
-    @keyframes gridFloat {
-      0% { transform: scale(1) translateY(0); opacity: 0.5; }
-      100% { transform: scale(1.02) translateY(-1%); opacity: 0.65; }
-    }
+    header{position:relative; z-index:2; padding:20px clamp(20px,6vw,48px)}
+    .brand{font-weight:700; letter-spacing:.02em; color:#cdd6ff; opacity:.9}
 
-    /* Layer 3 soft orbs */
-    .orb {
-      position: fixed;
-      width: 340px; height: 340px;
-      border-radius: 50%;
-      filter: blur(18px);
-      opacity: 0.22;
-      pointer-events: none;
-      mix-blend-mode: screen;
-      background: radial-gradient(circle at 40% 40%, rgba(72,178,255,0.9), rgba(72,178,255,0.2) 60%, transparent 70%);
-      animation: float 16s ease-in-out infinite;
+    main{position:relative; z-index:2}
+    .hero{
+      max-width:960px; margin:8vh auto 6vh; text-align:center; padding:0 24px;
     }
-    .orb:nth-child(1){ left: -80px; top: 20vh; animation-delay: 0s; }
-    .orb:nth-child(2){ right: -100px; top: 55vh; animation-delay: 4s; background: radial-gradient(circle at 40% 40%, rgba(0,226,199,0.9), rgba(0,226,199,0.2) 60%, transparent 70%); }
-    .orb:nth-child(3){ left: 55vw; top: -120px; animation-delay: 8s; background: radial-gradient(circle at 40% 40%, rgba(150,120,255,0.9), rgba(150,120,255,0.2) 60%, transparent 70%); }
-    @keyframes float {
-      0% { transform: translate3d(0,0,0) scale(1); }
-      50% { transform: translate3d(0,-18px,0) scale(1.05); }
-      100% { transform: translate3d(0,0,0) scale(1); }
+    .logo-badge{
+      width:56px; height:56px; margin:0 auto 18px; border-radius:12px;
+      background:#101739; display:grid; place-items:center; box-shadow:0 8px 30px rgba(0,0,0,.35);
+      font-weight:700; color:#9fb6ff; letter-spacing:.02em;
     }
+    h1{
+      font-size: clamp(40px, 6.5vw, 84px);
+      line-height:1.05; margin:6px 0 10px;
+      background: linear-gradient(180deg,#ffffff,#b7c3ff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow: 0 4px 32px rgba(0,0,0,.35);
+    }
+    .subtitle{
+      font-size: clamp(16px, 2.2vw, 22px);
+      color:#b9c1ec; max-width:780px; margin:0 auto 28px;
+    }
+    .cta{
+      display:inline-block; padding:14px 22px; border-radius:999px; text-decoration:none;
+      font-weight:700; letter-spacing:.01em; color:#fff;
+      background:linear-gradient(90deg,#4a8fff,#8a48ff);
+      box-shadow:0 12px 36px rgba(74,143,255,.35);
+      transition:transform .15s ease, filter .2s ease;
+    }
+    .cta:hover{transform:translateY(-2px); filter:brightness(1.05)}
 
-    header {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px clamp(20px, 6vw, 48px);
+    /* Features */
+    .features{
+      max-width:1100px; margin:48px auto 90px; padding:0 24px;
+      display:grid; gap:18px;
+      grid-template-columns: repeat(3, minmax(0,1fr));
     }
-    .logo {
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      font-size: clamp(16px, 2.2vw, 20px);
-      opacity: 0.95;
-    }
+    @media (max-width:950px){ .features{grid-template-columns:1fr} }
 
-    main {
-      position: relative;
-      z-index: 2;
-      min-height: calc(100svh - 120px);
-      display: grid;
-      place-items: center;
-      padding: clamp(24px, 5vw, 64px);
-      text-align: center;
+    .card{
+      background: rgba(12,18,51,.65);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px; padding:22px 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      backdrop-filter: blur(6px);
+      transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
     }
-    .hero {
-      max-width: 780px;
-      margin-inline: auto;
-    }
-    h1 {
-      font-size: clamp(28px, 5vw, 44px);
-      line-height: 1.1;
-      margin-bottom: 14px;
-      text-shadow: 0 2px 24px rgba(0,0,0,0.35);
-    }
-    h2 {
-      font-size: clamp(15px, 2.2vw, 18px);
-      font-weight: 400;
-      color: #c7cbe6;
-      margin: 0 auto 28px;
-      max-width: 580px;
-    }
-    .cta {
-      display: inline-block;
-      padding: 12px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      background: linear-gradient(180deg, #4a8fff, #2e6ef0);
-      color: white;
-      box-shadow: 0 10px 30px rgba(46,110,240,0.35), inset 0 0 10px rgba(255,255,255,0.12);
-      transform: translateZ(0);
-      transition: transform 0.15s ease, filter 0.2s ease;
-    }
-    .cta:hover { transform: translateY(-2px); filter: brightness(1.05); }
+    .card:hover{ transform: translateY(-2px); border-color: rgba(120,160,255,.28); box-shadow:0 16px 40px rgba(30,70,200,.35)}
+    .card h3{margin:2px 0 6px; font-size:20px; color:#e7ebff}
+    .card p{margin:0; color:#aab3dd; font-size:15px}
 
-    footer {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      padding: 24px;
-      color: #9aa3c2;
-      font-size: 14px;
-    }
-
-    /* slight vignette for depth */
-    .vignette {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.35) 100%);
-      z-index: 1;
-    }
+    footer{position:relative; z-index:2; text-align:center; color:#8f98c6; padding:36px 24px 60px}
   </style>
 </head>
 <body>
-  <div class="bg-aurora"></div>
-  <div class="bg-grid"></div>
-  <div class="orb"></div>
-  <div class="orb"></div>
-  <div class="orb"></div>
+  <div class="bg"></div>
   <div class="vignette"></div>
 
-  <header>
-    <div class="logo">PrediktFi</div>
-  </header>
+  <header><div class="brand">PrediktFi</div></header>
 
   <main>
-    <div class="hero">
+    <section class="hero">
+      <div class="logo-badge">P</div>
       <h1>Tokenized Predictions on Solana</h1>
-      <h2>Turning insights into assets. Be the first to access the future of InfoFi.</h2>
+      <p class="subtitle">Turning insights into assets. Experience the future of InfoFi where predictions become tradable primitives.</p>
       <a class="cta" href="#">Coming soon</a>
-    </div>
+    </section>
+
+    <section class="features">
+      <div class="card">
+        <h3>Decentralized</h3>
+        <p>Mint, trade and settle prediction assets peer to peer with no gatekeepers.</p>
+      </div>
+      <div class="card">
+        <h3>No KYC</h3>
+        <p>On-chain access using your wallet. Privacy-preserving and borderless.</p>
+      </div>
+      <div class="card">
+        <h3>Solana Speed</h3>
+        <p>Sub-second finality and near-zero fees so markets feel instant.</p>
+      </div>
+    </section>
   </main>
 
-  <footer>
-    © 2025 PrediktFi | Built on Solana
-  </footer>
+  <footer>© 2025 PrediktFi  Built on Solana</footer>
 </body>
 </html>
