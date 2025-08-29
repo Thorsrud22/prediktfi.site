@@ -19,6 +19,8 @@
     .top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
     .brand{font-weight:800;letter-spacing:.02em;font-size:18px;color:#cfd7ff;opacity:.95}
     .btn{appearance:none;border:0;border-radius:999px;padding:12px 16px;background:linear-gradient(90deg,#4a8fff,#8a48ff);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(74,143,255,.35)}
+    .btn.outline{background:transparent;border:1px solid rgba(255,255,255,.16)}
+    .linkbtn{display:inline-block;text-decoration:none}
     .wrap{display:grid;gap:22px}
     .hero{text-align:center;margin:10px auto 24px;max-width:780px}
     h1{font-size:clamp(28px,5vw,44px);background:linear-gradient(180deg,#ffffff,#b7c3ff);-webkit-background-clip:text;background-clip:text;color:transparent;margin:6px 0 10px}
@@ -30,6 +32,7 @@
     .card p{margin:0;color:#aab3dd;font-size:14px}
     .panel{margin-top:18px;padding:16px;border-radius:14px;background:rgba(12,18,51,.55);border:1px solid rgba(255,255,255,.06)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .input{flex:1 1 320px;min-height:44px;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;background:rgba(2,6,20,.35);color:#e9ecff}
     .small{font-size:13px;color:#9aa3c6}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all}
@@ -63,7 +66,13 @@
           <button id="signBtn" class="btn">Sign message</button>
         </div>
         <div class="small">Your wallet signs the text. No funds moved. You get a verifiable signature you can share.</div>
+
         <div id="result" class="small mono" style="margin-top:10px"></div>
+        <div class="actions" id="actions" style="display:none">
+          <button id="copyBtn" class="btn outline" type="button">Copy signature</button>
+          <a class="btn linkbtn outline" href="/verify.html">Open verify</a>
+          <button id="downloadBtn" class="btn outline" type="button">Download proof.json</button>
+        </div>
       </div>
     </section>
 
@@ -71,66 +80,89 @@
   </main>
 
   <script>
-    // Base58 encoder uten ekstern bibliotek
+    // Base58 encoder uten ekstern lib
     function base58encode(bytes){
       const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-      // tell ledende nuller
-      let zeros = 0;
-      for(let i=0;i<bytes.length && bytes[i]===0;i++) zeros++;
-      // bygg tallet som BigInt
-      let n = 0n;
-      for(const b of bytes){ n = (n << 8n) + BigInt(b); }
-      // konverter til base58
-      let s = '';
-      while(n > 0n){
-        const r = Number(n % 58n);
-        n = n / 58n;
-        s = ALPHABET[r] + s;
-      }
-      // legg til 1 for hver ledende null
-      for(let i=0;i<zeros;i++) s = '1' + s;
-      return s || '1'.repeat(zeros);
+      let zeros = 0; for(let i=0;i<bytes.length && bytes[i]===0;i++) zeros++;
+      let n = 0n; for(const b of bytes){ n = (n<<8n) + BigInt(b); }
+      let s=''; while(n>0n){ const r=Number(n%58n); n/=58n; s=ALPHABET[r]+s; }
+      return (s || '') || '1'.repeat(zeros);
     }
 
     const connectBtn = document.getElementById('connectBtn');
     const signBtn = document.getElementById('signBtn');
-    const result = document.getElementById('result');
-    const input = document.getElementById('predInput');
-    let wallet;
+    const result  = document.getElementById('result');
+    const input   = document.getElementById('predInput');
+    const actions = document.getElementById('actions');
+    const copyBtn = document.getElementById('copyBtn');
+    const dlBtn   = document.getElementById('downloadBtn');
+
+    let wallet, lastSig, lastPayload, lastISO;
 
     async function connectWallet(){
       try{
         if (!window.solana || !window.solana.isPhantom){
-          window.open('https://phantom.app/', '_blank');
-          return;
+          window.open('https://phantom.app/', '_blank'); return;
         }
         const resp = await window.solana.connect({ onlyIfTrusted:false });
         wallet = resp.publicKey.toString();
         connectBtn.textContent = wallet.slice(0,4) + '...' + wallet.slice(-4);
-      }catch(e){
-        result.textContent = 'Could not connect. ' + (e?.message || e);
-      }
+      }catch(e){ result.textContent = 'Could not connect. ' + (e?.message || e); }
     }
 
     async function signMessage(){
       try{
         if (!wallet){ await connectWallet(); if(!wallet) return; }
         const text = input.value?.trim() || 'PrediktFi demo prediction';
-        const payload = `PrediktFi signature\nWallet ${wallet}\nISO ${new Date().toISOString()}\nText ${text}`;
-        const encoded = new TextEncoder().encode(payload);
+        lastISO = new Date().toISOString();
+        lastPayload = `PrediktFi signature\nWallet ${wallet}\nISO ${lastISO}\nText ${text}`;
+        const encoded = new TextEncoder().encode(lastPayload);
 
         if (!window.solana.signMessage){
-          result.textContent = 'Your wallet does not allow message signing in this context.';
-          return;
+          result.textContent = 'Your wallet does not allow message signing in this context.'; return;
         }
         const signed = await window.solana.signMessage(encoded, 'utf8');
-        const sig58 = base58encode(signed.signature);
+        lastSig = base58encode(signed.signature);
 
-        result.textContent = 'Signed OK. Signature base58\n' + sig58;
+        result.innerHTML =
+          'Signed OK\n' +
+          'Wallet: ' + wallet + '\n' +
+          'ISO: ' + lastISO + '\n' +
+          'Signature (base58):\n' + lastSig;
+
+        actions.style.display = 'flex';
       }catch(e){
         result.textContent = 'Signing failed. ' + (e?.message || e);
       }
     }
+
+    copyBtn?.addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(lastSig || '');
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(()=>copyBtn.textContent='Copy signature', 1200);
+      }catch(e){}
+    });
+
+    dlBtn?.addEventListener('click', () => {
+      if (!lastSig) return;
+      const proof = {
+        product: 'PrediktFi',
+        scheme: 'ed25519',
+        encoding: 'base58',
+        wallet,
+        iso: lastISO,
+        message: lastPayload,
+        signature: lastSig
+      };
+      const blob = new Blob([JSON.stringify(proof,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `prediktfi-proof-${lastISO.replace(/[:.]/g,'-')}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    });
 
     connectBtn.addEventListener('click', connectWallet);
     signBtn.addEventListener('click', signMessage);
