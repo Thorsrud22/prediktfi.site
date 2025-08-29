@@ -38,6 +38,7 @@
 </head>
 <body>
   <div class="bg"></div><div class="vignette"></div>
+
   <main>
     <div class="top">
       <div class="brand">PrediktFi Alpha</div>
@@ -52,7 +53,7 @@
 
       <div class="grid">
         <div class="card"><h3>BTC range this week</h3><p>Sideways chop around key liquidity bands unless macro shock appears.</p></div>
-        <div class="card"><h3>SOL gas and fees</h3><p>High throughput periods continue with sub second confirms for retail flows.</p></div>
+        <div class="card"><h3>SOL gas and fees</h3><p>High throughput with sub second confirms for retail flows.</p></div>
         <div class="card"><h3>Memecoins rotation</h3><p>Rotation back to quality and creator backed tokens as hype fades.</p></div>
       </div>
 
@@ -69,8 +70,28 @@
     <footer>© 2025 PrediktFi</footer>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/dist/bs58.min.js"></script>
   <script>
+    // Base58 encoder uten ekstern bibliotek
+    function base58encode(bytes){
+      const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      // tell ledende nuller
+      let zeros = 0;
+      for(let i=0;i<bytes.length && bytes[i]===0;i++) zeros++;
+      // bygg tallet som BigInt
+      let n = 0n;
+      for(const b of bytes){ n = (n << 8n) + BigInt(b); }
+      // konverter til base58
+      let s = '';
+      while(n > 0n){
+        const r = Number(n % 58n);
+        n = n / 58n;
+        s = ALPHABET[r] + s;
+      }
+      // legg til 1 for hver ledende null
+      for(let i=0;i<zeros;i++) s = '1' + s;
+      return s || '1'.repeat(zeros);
+    }
+
     const connectBtn = document.getElementById('connectBtn');
     const signBtn = document.getElementById('signBtn');
     const result = document.getElementById('result');
@@ -87,7 +108,7 @@
         wallet = resp.publicKey.toString();
         connectBtn.textContent = wallet.slice(0,4) + '...' + wallet.slice(-4);
       }catch(e){
-        result.textContent = 'Could not connect. ' + e.message;
+        result.textContent = 'Could not connect. ' + (e?.message || e);
       }
     }
 
@@ -97,15 +118,17 @@
         const text = input.value?.trim() || 'PrediktFi demo prediction';
         const payload = `PrediktFi signature\nWallet ${wallet}\nISO ${new Date().toISOString()}\nText ${text}`;
         const encoded = new TextEncoder().encode(payload);
+
         if (!window.solana.signMessage){
           result.textContent = 'Your wallet does not allow message signing in this context.';
           return;
         }
         const signed = await window.solana.signMessage(encoded, 'utf8');
-        const sig = bs58.default.encode(signed.signature);
-        result.innerHTML = 'Signed OK. Signature base58\n' + sig + '\nPaste this with the text to verify later.';
+        const sig58 = base58encode(signed.signature);
+
+        result.textContent = 'Signed OK. Signature base58\n' + sig58;
       }catch(e){
-        result.textContent = 'Signing failed. ' + e.message;
+        result.textContent = 'Signing failed. ' + (e?.message || e);
       }
     }
 
