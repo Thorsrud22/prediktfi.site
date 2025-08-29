@@ -70,7 +70,8 @@
         <div id="result" class="small mono" style="margin-top:10px"></div>
         <div class="actions" id="actions" style="display:none">
           <button id="copyBtn" class="btn outline" type="button">Copy signature</button>
-          <a class="btn linkbtn outline" href="/verify.html">Open verify</a>
+          <a id="verifyLink" class="btn linkbtn outline" href="/verify.html">Open verify</a>
+          <button id="shareBtn" class="btn outline" type="button">Share on X</button>
           <button id="downloadBtn" class="btn outline" type="button">Download proof.json</button>
         </div>
       </div>
@@ -105,6 +106,8 @@
     const actions = document.getElementById('actions');
     const copyBtn = document.getElementById('copyBtn');
     const dlBtn   = document.getElementById('downloadBtn');
+    const verifyLink = document.getElementById('verifyLink');
+    const shareBtn = document.getElementById('shareBtn');
 
     const historyList  = document.getElementById('historyList');
     const clearHistory = document.getElementById('clearHistoryBtn');
@@ -192,6 +195,19 @@
           'Signature (base58):\n' + lastSig;
 
         actions.style.display = 'flex';
+
+        // Bygg verify URL for denne signaturen
+        const params = new URLSearchParams({ pubkey: wallet, sig: lastSig, msg: lastPayload });
+        const verifyUrl = '/verify.html?' + params.toString();
+        verifyLink.href = verifyUrl;
+
+        // Share på X
+        shareBtn.onclick = () => {
+          const textForPost =
+            `Signed a PrediktFi prediction\n${text}\nVerify: ${location.origin}${verifyUrl}`;
+          const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(textForPost);
+          window.open(url, '_blank', 'noopener,noreferrer');
+        };
 
         // lagre lokalt
         saveHistoryEntry(wallet, {
